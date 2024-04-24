@@ -1,10 +1,13 @@
-﻿using ChessServer.Domain.Authentication;
+﻿using ChessServer.Data.Repositories.Interfaces;
+using ChessServer.Domain.Authentication;
+using ChessServer.Domain.DtoS;
 using ChessServer.Domain.Models;
+using ChessServer.WebApi.Authentication.Interfaces;
 using ChessServer.WebApi.Controllers.Base;
 using MapsterMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using SharedLibrary.Models;
 
 namespace ChessServer.WebApi.Controllers;
 
@@ -12,40 +15,54 @@ namespace ChessServer.WebApi.Controllers;
 public sealed class AuthenticationController : BaseController
 {
     private readonly IMapper _mapper;
+    private readonly IJwtTokenGenerator _jwtTokenGenerator;
+    private readonly IUserRepository _userRepository;
+    private readonly CancellationTokenSource _cancellationTokenSource;
 
-    public AuthenticationController(IMapper mapper)
+    public AuthenticationController(IMapper mapper, IJwtTokenGenerator jwtTokenGenerator,
+        IUserRepository userRepository, CancellationTokenSource cancellationTokenSource)
     {
         _mapper = mapper;
+        _jwtTokenGenerator = jwtTokenGenerator;
+        _userRepository = userRepository;
+        _cancellationTokenSource = cancellationTokenSource;
     }
-    
-    [HttpPost("register")]
-    public IActionResult Register([FromQuery] RegisterRequest request)
+
+    [HttpPost("register"), AllowAnonymous]
+    public async Task<IActionResult> Register([FromQuery] RegisterRequest request)
     {
+        if (await _userRepository.GetByEmailAsync(request.Email) != null ||
+            await _userRepository.GetByUsernameAsync(request.Username) != null)
+            return Conflict("User already registered.");
+
         var user = new User
         {
             Id = Guid.NewGuid(),
             Email = request.Email,
-            UserName = request.UserName,
+            Username = request.Username,
             Password = request.Password,
+            Subscription = new Subscription(SubscriptionType.Basic),
+            EloRating = 1500,
         };
 
-        var json = JsonConvert.SerializeObject(_mapper.Map<Player>(user));
+        var token = _jwtTokenGenerator.Generate(_mapper.Map<UserJwtDto>(user));
 
-        return Ok(json);
+        var json = JsonConvert.SerializeObject(_mapper.Map<PlayerDto>(user));
+
+        await _userRepository.AddAsync(user, _cancellationTokenSource.Token);
+        await _userRepository.SaveChangesAsync(_cancellationTokenSource.Token);
+        return Ok(token);
     }
-        
-    [HttpPost("login")]
-    public IActionResult Login([FromQuery] LoginRequest request)
+
+    [HttpPost("login"), AllowAnonymous]
+    public async Task<IActionResult> Login([FromQuery] LoginRequest request)
     {
-        var user = new User
-        {
-            UserName = request.UserName,
-            Password = request.Password,
-        };
+        var user = await _userRepository.GetByUsernameAsync(request.Username, _cancellationTokenSource.Token);
+        if (user == null)
+            return NotFound("User doesn't exist.");
 
-        var json = JsonConvert.SerializeObject(_mapper.Map<Player>(user));
+        var token = _jwtTokenGenerator.Generate(_mapper.Map<UserJwtDto>(user));
 
-        return Ok(json);
+        return Ok(token);
     }
-    
 }

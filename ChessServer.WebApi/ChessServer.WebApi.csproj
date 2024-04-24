@@ -4,22 +4,30 @@
         <TargetFramework>net7.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-      <UserSecretsId>9aa3ca8c-2a19-4124-b3b9-fccf52d551d0</UserSecretsId>
-  </PropertyGroup>
+        <UserSecretsId>9aa3ca8c-2a19-4124-b3b9-fccf52d551d0</UserSecretsId>
+    </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Mapster" Version="7.4.0" />
-        <PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.17" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.17" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.17" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+        <PackageReference Include="Mapster" Version="7.4.0"/>
+        <PackageReference Include="Mapster.Core" Version="1.2.1"/>
+        <PackageReference Include="Mapster.DependencyInjection" Version="1.0.1"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.17"/>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.17"/>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.17"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.17">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.17">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ChessServer.Data\ChessServer.Data.csproj"/>
     </ItemGroup>
     
-    <ItemGroup>
-      <ProjectReference Include="..\ChessServer.Data\ChessServer.Data.csproj" />
-      <ProjectReference Include="..\SharedLibrary\SharedLibrary.csproj" />
-    </ItemGroup>
-
 </Project>

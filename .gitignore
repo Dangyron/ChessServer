@@ -3,3 +3,9 @@ obj/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
+
+Properties/
+global.json
+appsettings.json
+appsettings.Development.json    
+/.idea/
