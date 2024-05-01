@@ -1,4 +1,5 @@
-﻿using ChessServer.Data.Repositories.Interfaces;
+﻿using System.Text.RegularExpressions;
+using ChessServer.Data.Repositories.Interfaces;
 using ChessServer.Domain.Authentication;
 using ChessServer.Domain.DtoS;
 using ChessServer.Domain.Models;
@@ -40,6 +41,9 @@ public sealed class AuthenticationController : BaseController
             await _userRepository.GetByUsernameAsync(request.Username) != null)
             return Conflict("User already registered.");
 
+        if (ValidateUsername(request.Username) == false || ValidateEmail(request.Email) == false)
+            return BadRequest("Invalid username or email.");
+        
         var user = new User
         {
             Id = Guid.NewGuid(),
@@ -56,6 +60,24 @@ public sealed class AuthenticationController : BaseController
         await _userRepository.SaveChangesAsync(_cancellationTokenSource.Token);
         
         return Ok(_mapper.Map<AuthenticationResponse>((user, token)));
+    }
+
+    private bool ValidateEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return false;
+        
+        var pattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
+
+        return new Regex(pattern).IsMatch(email);
+    }
+
+    private bool ValidateUsername(string username)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+            return false;
+        
+        return !char.IsLetter(username.First()) && username.Length >= 5;
     }
 
     [HttpPost("login"), AllowAnonymous]
