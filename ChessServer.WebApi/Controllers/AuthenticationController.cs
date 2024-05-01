@@ -3,10 +3,13 @@ using ChessServer.Domain.Authentication;
 using ChessServer.Domain.DtoS;
 using ChessServer.Domain.Models;
 using ChessServer.WebApi.Authentication.Interfaces;
+using ChessServer.WebApi.Common;
+using ChessServer.WebApi.Common.Interfaces;
 using ChessServer.WebApi.Controllers.Base;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 
 namespace ChessServer.WebApi.Controllers;
@@ -18,14 +21,16 @@ public sealed class AuthenticationController : BaseController
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
     private readonly IUserRepository _userRepository;
     private readonly CancellationTokenSource _cancellationTokenSource;
+    private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
 
     public AuthenticationController(IMapper mapper, IJwtTokenGenerator jwtTokenGenerator,
-        IUserRepository userRepository, CancellationTokenSource cancellationTokenSource)
+        IUserRepository userRepository, CancellationTokenSource cancellationTokenSource, IHubContext<NotificationHub, INotificationHub> hubContext)
     {
         _mapper = mapper;
         _jwtTokenGenerator = jwtTokenGenerator;
         _userRepository = userRepository;
         _cancellationTokenSource = cancellationTokenSource;
+        _hubContext = hubContext;
     }
 
     [HttpPost("register"), AllowAnonymous]
@@ -47,11 +52,10 @@ public sealed class AuthenticationController : BaseController
 
         var token = _jwtTokenGenerator.Generate(_mapper.Map<UserJwtDto>(user));
 
-        var json = JsonConvert.SerializeObject(_mapper.Map<PlayerDto>(user));
-
         await _userRepository.AddAsync(user, _cancellationTokenSource.Token);
         await _userRepository.SaveChangesAsync(_cancellationTokenSource.Token);
-        return Ok(token);
+        
+        return Ok(_mapper.Map<AuthenticationResponse>((user, token)));
     }
 
     [HttpPost("login"), AllowAnonymous]
@@ -63,6 +67,18 @@ public sealed class AuthenticationController : BaseController
 
         var token = _jwtTokenGenerator.Generate(_mapper.Map<UserJwtDto>(user));
 
-        return Ok(token);
+        return Ok(_mapper.Map<AuthenticationResponse>((user, token)));
+    }
+    
+    [HttpPost("refresh"), AllowAnonymous]
+    public async Task<IActionResult> Refresh([FromQuery] LoginRequest request)
+    {
+        var user = await _userRepository.GetByUsernameAsync(request.Username, _cancellationTokenSource.Token);
+        if (user == null)
+            return NotFound("User doesn't exist.");
+
+        var token = _jwtTokenGenerator.Generate(_mapper.Map<UserJwtDto>(user));
+
+        return Ok(_mapper.Map<AuthenticationResponse>((user, token)));
     }
 }

@@ -4,12 +4,12 @@ namespace ChessServer.Domain.Models;
 
 public sealed class Game : Entity
 {
+    public const string DefaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     public Guid BlackPlayerId { get; set; }
     public Guid WhitePlayerId { get; set; }
-    public string Fen { get; init; } = string.Empty;
+    public string Fen { get; set; } = string.Empty;
     public bool IsRating { get; set; }
-    [NotMapped]public List<BoardPosition> Moves { get; set; } = new();
     public DateTime StartTime { get; set; }
-    public DateTime EndTime { get; set; }
+    public DateTime? EndTime { get; set; }
     public GameResult Result { get; set; }
 }

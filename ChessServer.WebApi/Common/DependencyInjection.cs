@@ -16,7 +16,10 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddBaseSetUp(this IServiceCollection services, ConfigurationManager configuration)
     {
-        services.AddControllers().AddNewtonsoftJson();
+        services.AddControllers()
+            .AddNewtonsoftJson();
+
+        services.AddSignalR();
         
         services.AddMapping();
 

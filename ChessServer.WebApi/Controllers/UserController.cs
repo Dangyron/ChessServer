@@ -22,7 +22,7 @@ public class UserController : BaseController
         return Task.FromResult((IActionResult)Ok());
     }
     
-    [HttpPost("add-info")]
+    [HttpPut("add-info")]
     public async Task<IActionResult> AddInfo(User user)
     {
         await _userRepository.UpdateAsync(user);

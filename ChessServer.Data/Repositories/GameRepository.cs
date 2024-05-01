@@ -10,7 +10,7 @@ public class GameRepository : Repository<Game>, IGameRepository
     {
     }
     
-    public Task Update(Game game, CancellationToken? cancellationToken = default)
+    public Task UpdateAsync(Game game, CancellationToken? cancellationToken = default)
     {
         throw new NotImplementedException();
     }

@@ -4,5 +4,5 @@ namespace ChessServer.Data.Repositories.Interfaces;
 
 public interface IGameRepository : IRepository<Game>
 {
-    Task Update(Game game, CancellationToken? cancellationToken = default);
+    Task UpdateAsync(Game game, CancellationToken? cancellationToken = default);
 }

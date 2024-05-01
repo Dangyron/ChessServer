@@ -16,6 +16,8 @@ public sealed class ChessDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ChessDbContext).Assembly);
+        
         modelBuilder.ApplyConfiguration(new UserTypeConfiguration());
         modelBuilder.ApplyConfiguration(new GameTypeConfiguration());
         
