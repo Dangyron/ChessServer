@@ -1,21 +1,22 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:7.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS base
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
+EXPOSE 8080
+EXPOSE 8081
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ChessServer.Data/ChessServer.Data.csproj data/
-COPY ChessServer.WebApi/ChessServer.WebApi.csproj api/
-COPY ChessServer.Domain core/
-
-RUN dotnet restore "api/ChessServer.WebApi.csproj"
+COPY ["ChessServer.WebApi/ChessServer.WebApi.csproj", "ChessServer.WebApi/"]
+COPY ["ChessServer.Data/ChessServer.Data.csproj", "ChessServer.Data/"]
+COPY ["ChessServer.Domain/ChessServer.Domain.csproj", "ChessServer.Domain/"]
+RUN dotnet restore "./ChessServer.WebApi/ChessServer.WebApi.csproj"
 COPY . .
-WORKDIR "/src/api"
-RUN dotnet build "ChessServer.WebApi.csproj" -c Release -o /app/build
+WORKDIR "/src/ChessServer.WebApi"
+RUN dotnet build "./ChessServer.WebApi.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "ChessServer.WebApi.csproj" -c Release -o /app/publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./ChessServer.WebApi.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
