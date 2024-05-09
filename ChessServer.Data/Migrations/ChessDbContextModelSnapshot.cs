@@ -41,21 +41,19 @@ namespace ChessServer.Data.Migrations
                     b.Property<bool>("IsRating")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("Moves")
+                        .HasColumnType("text");
+
                     b.Property<int>("Result")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("WhitePlayerId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Games", (string)null);
                 });
@@ -107,13 +105,6 @@ namespace ChessServer.Data.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
-            modelBuilder.Entity("ChessServer.Domain.Models.Game", b =>
-                {
-                    b.HasOne("ChessServer.Domain.Models.User", null)
-                        .WithMany("Games")
-                        .HasForeignKey("UserId");
-                });
-
             modelBuilder.Entity("ChessServer.Domain.Models.User", b =>
                 {
                     b.OwnsOne("ChessServer.Domain.Models.Subscription", "Subscription", b1 =>
@@ -139,11 +130,6 @@ namespace ChessServer.Data.Migrations
 
                     b.Navigation("Subscription")
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("ChessServer.Domain.Models.User", b =>
-                {
-                    b.Navigation("Games");
                 });
 #pragma warning restore 612, 618
         }

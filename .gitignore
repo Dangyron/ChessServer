@@ -4,8 +4,11 @@ obj/
 riderModule.iml
 /_ReSharper.Caches/
 
-Properties/
 global.json
-appsettings.json
-appsettings.Development.json    
 /.idea/
+*.yml
+*.env
+*.dcproj
+/logs/
+.container/
+.vs/

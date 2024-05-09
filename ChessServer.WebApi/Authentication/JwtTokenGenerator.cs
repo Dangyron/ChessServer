@@ -9,6 +9,11 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace ChessServer.WebApi.Authentication;
 
+public static class CustomClaims
+{
+    public const string UserId = "userId";
+}
+
 public sealed class JwtTokenGenerator : IJwtTokenGenerator
 {
     private readonly JwtTokenSettings _jwtTokenSettings;
@@ -27,7 +32,7 @@ public sealed class JwtTokenGenerator : IJwtTokenGenerator
 
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, userDto.Id.ToString()),
+            new Claim(CustomClaims.UserId, userDto.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Name, userDto.Username),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };

@@ -7,7 +7,7 @@ namespace ChessServer.Data.Data;
 
 public sealed class ChessDbContext : DbContext
 {
-    public const string ConnectionStringSectionName = "defaultConnection";
+    public const string ConnectionStringSectionName = "psqlConnection";
     
     public ChessDbContext(DbContextOptions<ChessDbContext> options) : base(options) { }
 
@@ -16,8 +16,6 @@ public sealed class ChessDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ChessDbContext).Assembly);
-        
         modelBuilder.ApplyConfiguration(new UserTypeConfiguration());
         modelBuilder.ApplyConfiguration(new GameTypeConfiguration());
         

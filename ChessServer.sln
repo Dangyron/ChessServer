@@ -1,10 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessServer.Domain", "ChessServer.Domain\ChessServer.Domain.csproj", "{596CB264-4AC8-450E-8FDE-EB57F65FC586}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34723.18
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChessServer.Domain", "ChessServer.Domain\ChessServer.Domain.csproj", "{596CB264-4AC8-450E-8FDE-EB57F65FC586}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessServer.Data", "ChessServer.Data\ChessServer.Data.csproj", "{79AA41E0-A894-418D-A7E3-0389F39DA97B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChessServer.Data", "ChessServer.Data\ChessServer.Data.csproj", "{79AA41E0-A894-418D-A7E3-0389F39DA97B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessServer.WebApi", "ChessServer.WebApi\ChessServer.WebApi.csproj", "{ED2451DE-77FF-4CD9-87A9-0B5EECA77CA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChessServer.WebApi", "ChessServer.WebApi\ChessServer.WebApi.csproj", "{ED2451DE-77FF-4CD9-87A9-0B5EECA77CA3}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{0EACDA25-E021-4791-8DB9-35FE2008AA85}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,5 +29,12 @@ Global
 		{ED2451DE-77FF-4CD9-87A9-0B5EECA77CA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ED2451DE-77FF-4CD9-87A9-0B5EECA77CA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ED2451DE-77FF-4CD9-87A9-0B5EECA77CA3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0EACDA25-E021-4791-8DB9-35FE2008AA85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EACDA25-E021-4791-8DB9-35FE2008AA85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EACDA25-E021-4791-8DB9-35FE2008AA85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0EACDA25-E021-4791-8DB9-35FE2008AA85}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal

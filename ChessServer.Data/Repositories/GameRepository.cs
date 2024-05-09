@@ -1,6 +1,7 @@
 ﻿using ChessServer.Data.Data;
 using ChessServer.Data.Repositories.Interfaces;
 using ChessServer.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace ChessServer.Data.Repositories;
 
@@ -9,9 +10,22 @@ public class GameRepository : Repository<Game>, IGameRepository
     public GameRepository(ChessDbContext dbContext) : base(dbContext)
     {
     }
-    
-    public Task UpdateAsync(Game game, CancellationToken? cancellationToken = default)
+
+    public async Task UpdateAsync(Game entity, CancellationToken? cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var game = await Set.FirstOrDefaultAsync(p => p.Id == entity.Id, cancellationToken ?? default);
+
+        if (game == null)
+            return;
+
+        game.EndTime = entity.EndTime;
+        game.Fen = entity.Fen;
+        game.Pgn = entity.Pgn;
+        game.Result = entity.Result;
+    }
+
+    public IAsyncEnumerable<Game>? FindFor(Guid id, CancellationToken? cancellationToken = default)
+    {
+        return Set.Where(game => game.BlackPlayerId == id || game.WhitePlayerId == id).AsAsyncEnumerable();
     }
 }

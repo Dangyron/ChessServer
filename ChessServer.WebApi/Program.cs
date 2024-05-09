@@ -1,3 +1,4 @@
+using ChessServer.Data.Data;
 using ChessServer.WebApi.Common;
 using Serilog;
 
@@ -11,7 +12,13 @@ builder.Host.UseSerilog((context, configuration) =>
 
 var app = builder.Build();
 
+if (app.Environment.IsDevelopment())
+{
+    app.ApplyMigrations();
+}
+
 app.UseHttpsRedirection();
+app.MapHub<NotificationHub>("notification");
 
 app.UseSerilogRequestLogging();
 
@@ -19,6 +26,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<NotificationHub>("/notification");
 
 app.Run();

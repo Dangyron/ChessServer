@@ -20,7 +20,9 @@ public class GameTypeConfiguration : IEntityTypeConfiguration<Game>
         builder.Property(game => game.Fen).IsRequired();
         builder.Property(game => game.StartTime).IsRequired();
         builder.Property(game => game.EndTime).IsRequired();
-        /*builder.Property(game => game.Moves);*/
+
+        builder.Property(game => game.Pgn);
+        
         builder.Property(game => game.Result).IsRequired();
     }
 }

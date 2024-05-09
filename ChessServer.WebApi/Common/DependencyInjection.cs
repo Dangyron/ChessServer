@@ -1,12 +1,16 @@
-﻿using System.Reflection;
+﻿using System.Collections.Concurrent;
+using System.Reflection;
 using System.Text;
+using ChessLogic;
 using ChessServer.Data.Common;
+using ChessServer.Data.Data;
 using ChessServer.WebApi.Authentication;
 using ChessServer.WebApi.Authentication.Common;
 using ChessServer.WebApi.Authentication.Interfaces;
 using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -14,22 +18,42 @@ namespace ChessServer.WebApi.Common;
 
 public static class DependencyInjection
 {
+    public static void ApplyMigrations(this IApplicationBuilder app)
+    {
+        using (var scope = app.ApplicationServices.CreateScope())
+        {
+            using (var dbContext = scope.ServiceProvider.GetRequiredService<ChessDbContext>())
+            {
+                dbContext.Database.Migrate();
+            }
+        }
+    }
+
     public static IServiceCollection AddBaseSetUp(this IServiceCollection services, ConfigurationManager configuration)
     {
         services.AddControllers()
             .AddNewtonsoftJson();
 
         services.AddSignalR();
-        
+
         services.AddMapping();
 
         services.AddDb(configuration);
-        
+
         services.AddAuth(configuration);
-        
+
+        var currentPlayingGames = new ConcurrentDictionary<Guid, GameState>();
+        services.AddSingleton(Options.Create(currentPlayingGames));
+
+        var playersPool = new ConcurrentBag<Guid>();
+        services.AddSingleton(Options.Create(playersPool));
+
+        var playersConnections = new ConcurrentDictionary<Guid, string>();
+        services.AddSingleton(Options.Create(playersConnections));
+
         return services;
     }
-    
+
     private static IServiceCollection AddMapping(this IServiceCollection services)
     {
         var mapperConfig = TypeAdapterConfig.GlobalSettings;
@@ -37,10 +61,10 @@ public static class DependencyInjection
 
         services.AddSingleton(mapperConfig);
         services.AddScoped<IMapper, ServiceMapper>();
-        
+
         return services;
     }
-    
+
     private static IServiceCollection AddAuth(this IServiceCollection services, ConfigurationManager configuration)
     {
         var jwtTokenSettings = new JwtTokenSettings();

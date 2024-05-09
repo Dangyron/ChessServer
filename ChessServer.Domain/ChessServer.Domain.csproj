@@ -10,4 +10,10 @@
       <PackageReference Include="Ardalis.SmartEnum" Version="7.0.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="ChessLogic">
+        <HintPath>..\..\ChessLogic\ChessLogic\bin\Debug\net7.0\ChessLogic.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

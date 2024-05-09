@@ -19,7 +19,7 @@ public class UserRepository : Repository<User>, IUserRepository
 
     public Task<User?> GetByUsernameAsync([NotNull]string username, CancellationToken cancellationToken = default)
     {
-        return Set.FirstOrDefaultAsync(p => p.Email == username, cancellationToken);
+        return Set.FirstOrDefaultAsync(p => p.Username == username, cancellationToken);
     }
 
     public async Task UpdateAsync(User entity, CancellationToken? cancellationToken = default)
@@ -27,9 +27,7 @@ public class UserRepository : Repository<User>, IUserRepository
         var user = await Set.FirstOrDefaultAsync(p => p.Id == entity.Id, cancellationToken ?? default);
         
         if (user == null)
-        {
-            throw new ArgumentException("User doesn't exist.");
-        }
+            return;
 
         user.Age = entity.Age;
         user.Username = entity.Username;
