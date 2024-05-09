@@ -9,6 +9,6 @@ global.json
 *.yml
 *.env
 *.dcproj
-/logs/
+logs/
 .container/
 .vs/
