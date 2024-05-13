@@ -31,8 +31,11 @@ public sealed class AuthenticationController : BaseController
         _userRepository = userRepository;
         _cancellationTokenSource = cancellationTokenSource;
     }
-
+    
     [HttpPost("register"), AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register([FromQuery] RegisterRequest request)
     {
         if (await _userRepository.GetByEmailAsync(request.Email) != null ||
@@ -61,6 +64,8 @@ public sealed class AuthenticationController : BaseController
     }
 
     [HttpPost("login"), AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Login([FromQuery] LoginRequest request)
     {
         var user = await _userRepository.GetByUsernameAsync(request.Username, _cancellationTokenSource.Token);

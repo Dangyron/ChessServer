@@ -1,4 +1,3 @@
-using ChessServer.Data.Data;
 using ChessServer.WebApi.Common;
 using Serilog;
 
@@ -15,7 +14,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.ApplyMigrations();
-}
+}   
 
 app.UseHttpsRedirection();
 app.MapHub<NotificationHub>("notification");

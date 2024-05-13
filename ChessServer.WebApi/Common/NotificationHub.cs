@@ -39,11 +39,4 @@ public sealed class NotificationHub : Hub<INotificationHub>
         
         await base.OnDisconnectedAsync(exception);
     }
-    
-    public async Task OnMoveSent(string message)
-    {
-        var request = JsonConvert.DeserializeObject<MoveRequest>(message);
-
-        await Clients.Group(request!.Id.ToString()).OnMoveReceived(message);
-    }
 }

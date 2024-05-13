@@ -11,6 +11,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChessServer.WebApi", "Chess
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{0EACDA25-E021-4791-8DB9-35FE2008AA85}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{9D3994E2-FA2D-42DD-B43E-7BABB724A39C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{6855FE91-D4E6-48AF-A71F-CC57AC52D2B1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +40,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{79AA41E0-A894-418D-A7E3-0389F39DA97B} = {9D3994E2-FA2D-42DD-B43E-7BABB724A39C}
+		{596CB264-4AC8-450E-8FDE-EB57F65FC586} = {9D3994E2-FA2D-42DD-B43E-7BABB724A39C}
+		{ED2451DE-77FF-4CD9-87A9-0B5EECA77CA3} = {9D3994E2-FA2D-42DD-B43E-7BABB724A39C}
 	EndGlobalSection
 EndGlobal

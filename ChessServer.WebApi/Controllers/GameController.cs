@@ -7,6 +7,7 @@ using ChessServer.WebApi.Common;
 using ChessServer.WebApi.Common.Extensions;
 using ChessServer.WebApi.Common.Interfaces;
 using ChessServer.WebApi.Controllers.Base;
+using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -44,6 +45,7 @@ public class GameController : BaseController
     }
 
     [HttpPost("start-new")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public Task<IActionResult> AddToPool()
     {
         var userId = User.GetId();
@@ -86,6 +88,8 @@ public class GameController : BaseController
         await _hubContext.Groups.AddToGroupAsync(_playerConnections[whitePlayerId], game.Id.ToString());
         await _hubContext.Groups.AddToGroupAsync(_playerConnections[blackPlayerId], game.Id.ToString());
 
+        await _hubContext.Clients.Group(game.Id.ToString()).OnGameStarted(game.Id.ToString());
+        
         await _gameRepository.AddAsync(game, _cancellationTokenSource.Token);
         await _gameRepository.SaveChangesAsync(_cancellationTokenSource.Token);
 
@@ -93,6 +97,8 @@ public class GameController : BaseController
     }
 
     [HttpPost("abort")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Abort(Guid gameId)
     {
         var gameState = _currentPlayingGames.GetValueOrDefault(gameId);
@@ -100,35 +106,56 @@ public class GameController : BaseController
         if (gameState == null)
             return BadRequest("Game not found");
 
-        var game = (await _gameRepository.GetByIdAsync(gameId))!;
-
-        game.Result = GameResult.Abort;
-        _currentPlayingGames.TryRemove(gameId, out _);
-        
-        await _gameRepository.UpdateAsync(game, _cancellationTokenSource.Token);
-        await _gameRepository.SaveChangesAsync(_cancellationTokenSource.Token);
+        await EndGame(gameId, GameResult.Aborted, "");
 
         return Ok();
     }
 
     [HttpPost("move")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> MakeMove(MoveRequest request)
     {
-        var gameState = _currentPlayingGames.GetValueOrDefault(request.Id);
+        var currentGame = _currentPlayingGames.GetValueOrDefault(request.Id);
 
-        if (gameState == null)
+        if (currentGame == null)
             return BadRequest("Game not found");
 
-        if (!gameState.MakeMove(request.Move))
+        var move = currentGame.ParseMove(request.Move);
+        var moveResponse = new MoveResponse { Id = request.Id, Move = request.Move };
+        
+        if (!currentGame.MakeMove(move))
         {
+            await _hubContext.Clients.Group(request.Id.ToString()).OnIllegalMoveSent(JsonConvert.SerializeObject(moveResponse));
             return BadRequest();
         }
         
-        await _hubContext.Clients.Group(request.Id.ToString()).OnMoveSent(JsonConvert.SerializeObject(request));
+        await _hubContext.Clients.Group(request.Id.ToString()).OnMoveReceived(JsonConvert.SerializeObject(moveResponse));
 
-        if (!gameState.IsGameOver)
+        if (!currentGame.IsGameOver)
             return Ok();
         
+        await EndGame(request.Id, currentGame.Result!.ToGameResult(), "");
+        
         return Ok();
+    }
+
+    private async Task EndGame(Guid gameId, GameResult result, string message)
+    {
+        var game = (await _gameRepository.GetByIdAsync(gameId))!;
+
+        game.Result = result;
+        _currentPlayingGames.TryRemove(gameId, out _);
+        await _hubContext.Clients.Group(game.Id.ToString()).OnGameEnded(message);
+        
+        await _gameRepository.UpdateAsync(game, _cancellationTokenSource.Token);
+        await _gameRepository.SaveChangesAsync(_cancellationTokenSource.Token);
+
+        await _hubContext.Groups.RemoveFromGroupAsync(_playerConnections[game.WhitePlayerId], game.Id.ToString());
+        await _hubContext.Groups.RemoveFromGroupAsync(_playerConnections[game.BlackPlayerId], game.Id.ToString());
+
+        _currentPlayingGames.TryRemove(game.Id, out _);
+        _playerConnections.TryRemove(game.WhitePlayerId, out _);
+        _playerConnections.TryRemove(game.BlackPlayerId, out _);
     }
 }

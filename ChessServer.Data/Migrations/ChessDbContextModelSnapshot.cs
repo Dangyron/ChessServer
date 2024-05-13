@@ -41,7 +41,7 @@ namespace ChessServer.Data.Migrations
                     b.Property<bool>("IsRating")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Moves")
+                    b.Property<string>("Pgn")
                         .HasColumnType("text");
 
                     b.Property<int>("Result")

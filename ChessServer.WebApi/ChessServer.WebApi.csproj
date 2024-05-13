@@ -10,7 +10,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Dangyron.ChessLogic" Version="1.0.0" />
         <PackageReference Include="Mapster" Version="7.4.0" />
         <PackageReference Include="Mapster.Core" Version="1.2.1" />
         <PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />
@@ -42,6 +41,12 @@
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="ChessLogic">
+        <HintPath>..\..\ChessLogic\ChessLogic\bin\Debug\net7.0\ChessLogic.dll</HintPath>
+      </Reference>
     </ItemGroup>
     
 </Project>

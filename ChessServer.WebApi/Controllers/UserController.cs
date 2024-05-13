@@ -25,6 +25,7 @@ public class UserController : BaseController
     }
 
     [HttpGet("games")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public Task<IActionResult> GetGames()
     {
         var userId = User.GetId();
@@ -34,6 +35,7 @@ public class UserController : BaseController
     }
     
     [HttpPut("add-info")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> AddInfo(AddUserInfoDto userInfoDto)
     {
         var userId = User.GetId();
@@ -54,6 +56,7 @@ public class UserController : BaseController
     }
     
     [HttpGet("info")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetInfo()
     {
         var userId = User.GetId();
@@ -62,6 +65,7 @@ public class UserController : BaseController
     }
     
     [HttpDelete("delete")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> Delete()
     {
         var userId = User.GetId();
