@@ -1,7 +1,9 @@
-﻿namespace ChessServer.Domain.DtoS;
+﻿using ChessLogic.Moves;
+
+namespace ChessServer.Domain.DtoS;
 
 public sealed class MoveResponse
 {
     public Guid Id { get; set; }
-    public string Move { get; set; } = null!;
+    public Move Move { get; set; } = null!;
 }

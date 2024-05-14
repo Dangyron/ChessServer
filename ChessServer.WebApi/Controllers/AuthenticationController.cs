@@ -1,22 +1,18 @@
 ﻿using System.Text.RegularExpressions;
-using ChessLogic;
 using ChessServer.Data.Repositories.Interfaces;
 using ChessServer.Domain.Authentication;
 using ChessServer.Domain.DtoS;
 using ChessServer.Domain.Models;
 using ChessServer.WebApi.Authentication.Interfaces;
-using ChessServer.WebApi.Common;
-using ChessServer.WebApi.Common.Interfaces;
 using ChessServer.WebApi.Controllers.Base;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 
 namespace ChessServer.WebApi.Controllers;
 
 [Route("auth")]
-public sealed class AuthenticationController : BaseController
+public sealed partial class AuthenticationController : BaseController
 {
     private readonly IMapper _mapper;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
@@ -24,7 +20,7 @@ public sealed class AuthenticationController : BaseController
     private readonly CancellationTokenSource _cancellationTokenSource;
 
     public AuthenticationController(IMapper mapper, IJwtTokenGenerator jwtTokenGenerator,
-        IUserRepository userRepository, CancellationTokenSource cancellationTokenSource, IHubContext<NotificationHub, INotificationHub> hubContext)
+        IUserRepository userRepository, CancellationTokenSource cancellationTokenSource)
     {
         _mapper = mapper;
         _jwtTokenGenerator = jwtTokenGenerator;
@@ -78,16 +74,19 @@ public sealed class AuthenticationController : BaseController
         return Ok(_mapper.Map<AuthenticationResponse>((user, token)));
     }
     
-    private bool ValidateEmail(string email)
+    public bool ValidateEmail(string email)
     {
-        return !string.IsNullOrWhiteSpace(email) && new Regex(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").IsMatch(email);
+        return !string.IsNullOrWhiteSpace(email) && EmailRegex().IsMatch(email);
     }
 
-    private bool ValidateUsername(string username)
+    public bool ValidateUsername(string username)
     {
         if (string.IsNullOrWhiteSpace(username) || !char.IsLetter(username.First()))
             return false;
         
         return username.Length >= 5;
     }
+
+    [GeneratedRegex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")]
+    private static partial Regex EmailRegex();
 }
