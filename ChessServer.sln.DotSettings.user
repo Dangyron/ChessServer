@@ -1,12 +1,9 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
 	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=E_003A_005Cuni_005C3k_005C2s_005Cspi_005CunityProjs_005CChessLogic_005CChessLogic_005Cbin_005CDebug_005Cnet7_002E0_005CChessLogic_002Edll/@EntryIndexedValue">True</s:Boolean>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=65014d47_002Ddaf6_002D4ec0_002Da116_002Dfd5579d3ffac/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from &amp;lt;tests&amp;gt;\&amp;lt;ChessServer.WebApi.Tests&amp;gt;" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;Project Location="E:\uni\3k\2s\spi\unityProjs\ChessServer\ChessServer.WebApi.Tests" Presentation="&amp;lt;tests&amp;gt;\&amp;lt;ChessServer.WebApi.Tests&amp;gt;" /&gt;&#xD;
-&lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=6c42daa9_002D65ce_002D4028_002D941a_002Dcb9746a9798e/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="All tests from &amp;lt;tests&amp;gt;\&amp;lt;ChessServer.WebApi.Tests&amp;gt; #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;Project Location="E:\uni\3k\2s\spi\unityProjs\ChessServer\ChessServer.WebApi.Tests" Presentation="&amp;lt;tests&amp;gt;\&amp;lt;ChessServer.WebApi.Tests&amp;gt;" /&gt;&#xD;
-&lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=95fcc3fc_002D3985_002D4e72_002Da279_002D37b0cad00d56/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="All tests from Solution" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;Solution /&gt;&#xD;
-&lt;/SessionState&gt;</s:String>
+	
+	
+	
+	
+	
+	
 	</wpf:ResourceDictionary>

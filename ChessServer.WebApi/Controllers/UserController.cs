@@ -14,24 +14,22 @@ public class UserController : BaseController
     private readonly IUserRepository _userRepository;
     private readonly IGameRepository _gameRepository;
     private readonly CancellationTokenSource _cancellationTokenSource;
-    private readonly IMapper _mapper;
-    
-    public UserController(IUserRepository userRepository, IMapper mapper, CancellationTokenSource cancellationTokenSource, IGameRepository gameRepository)
+
+    public UserController(IUserRepository userRepository, CancellationTokenSource cancellationTokenSource, IGameRepository gameRepository)
     {
         _userRepository = userRepository;
-        _mapper = mapper;
         _cancellationTokenSource = cancellationTokenSource;
         _gameRepository = gameRepository;
     }
 
     [HttpGet("games")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public Task<IActionResult> GetGames()
+    public async Task<IActionResult> GetGames()
     {
         var userId = User.GetId();
-        var games = _gameRepository.FindFor(userId, _cancellationTokenSource.Token);
+        var games = await _gameRepository.FindFor(userId, _cancellationTokenSource.Token);
 
-        return Task.FromResult((IActionResult)Ok(games));
+        return Ok(games);
     }
     
     [HttpPut("add-info")]
@@ -60,8 +58,8 @@ public class UserController : BaseController
     public async Task<IActionResult> GetInfo()
     {
         var userId = User.GetId();
-        var user = await _userRepository.GetByIdAsync(userId);
-        return Ok(JsonConvert.SerializeObject(user));
+        var user = await _userRepository.GetByIdAsync(userId, _cancellationTokenSource.Token);
+        return Ok(user);
     }
     
     [HttpDelete("delete")]
@@ -69,7 +67,7 @@ public class UserController : BaseController
     public async Task<IActionResult> Delete()
     {
         var userId = User.GetId();
-        var user = await _userRepository.GetByIdAsync(userId);
+        var user = await _userRepository.GetByIdAsync(userId, _cancellationTokenSource.Token);
         _userRepository.Remove(user!);
         return Ok();
     }

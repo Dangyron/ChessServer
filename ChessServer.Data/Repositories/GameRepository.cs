@@ -24,8 +24,8 @@ public class GameRepository : Repository<Game>, IGameRepository
         game.Result = entity.Result;
     }
 
-    public IAsyncEnumerable<Game>? FindFor(Guid id, CancellationToken? cancellationToken = default)
+    public async Task<IEnumerable<Game>?> FindFor(Guid id, CancellationToken? cancellationToken = default)
     {
-        return Set.Where(game => game.BlackPlayerId == id || game.WhitePlayerId == id).AsAsyncEnumerable();
+        return await Set.Where(game => game.BlackPlayerId == id || game.WhitePlayerId == id).ToListAsync();
     }
 }

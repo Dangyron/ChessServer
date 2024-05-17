@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using ChessLogic;
 using ChessServer.Data.Repositories.Interfaces;
+using ChessServer.Domain.DtoS;
 using ChessServer.WebApi.Authentication;
 using ChessServer.WebApi.Common;
 using ChessServer.WebApi.Common.Interfaces;
@@ -61,38 +62,127 @@ public sealed class GameControllerTests
     public async Task StartNew_WithValidPlayers_CreatesNewGameAndReturnsOkResult()
     {
         // Arrange
-        var gameRepository = Substitute.For<IGameRepository>();
         var cancellationTokenSource = new CancellationTokenSource();
-        var playersPool = new ConcurrentBag<Guid>();
         var playerConnections = new ConcurrentDictionary<Guid, string>();
         var groupClients = Substitute.For<IGroupManager>();
+        var hubClients = Substitute.For<IHubClients<INotificationHub>>();
         var hubContext = Substitute.For<IHubContext<NotificationHub, INotificationHub>>();
+        var hubClient = Substitute.For<INotificationHub>();
+        
         var controller = new GameController(
-            gameRepository,
+            Substitute.For<IGameRepository>(),
             cancellationTokenSource,
             Options.Create(new ConcurrentDictionary<Guid, GameState>()),
             hubContext,
-            Options.Create(playersPool),
+            Options.Create(new ConcurrentBag<Guid>()),
             Options.Create(playerConnections)
         );
 
         var whitePlayerId = Guid.NewGuid();
         var blackPlayerId = Guid.NewGuid();
 
+        playerConnections[whitePlayerId] = string.Empty;
+        playerConnections[blackPlayerId] = string.Empty;
+
         hubContext.Groups.Returns(groupClients);
         groupClients.AddToGroupAsync(Arg.Any<string>(), Arg.Any<string>(), cancellationTokenSource.Token).Returns(Task.CompletedTask);
         
-        var clientProxy = Substitute.For<INotificationHub>();
-        hubContext.Clients.Group(Arg.Any<string>()).Returns(clientProxy);
-
+        hubContext.Clients.Returns(hubClients);
+        hubClients.Client(Arg.Any<string>()).Returns(hubClient);
+        
         // Act
         var result = await controller.StartNew(whitePlayerId, blackPlayerId);
 
         // Assert
-        Assert.IsType<OkObjectResult>(result);
-        var gameId = Assert.IsType<Guid>(((ObjectResult)result).Value);
-        Assert.NotEqual(Guid.Empty, gameId);
+        Assert.IsType<OkResult>(result);
+        await hubClient.Received(2).OnGameStarted(Arg.Any<string>());
         await groupClients.Received(2).AddToGroupAsync(Arg.Any<string>(), Arg.Any<string>(), cancellationTokenSource.Token);
-        await clientProxy.Received().OnGameStarted(Arg.Any<string>());
+    }
+    
+    [Fact]
+    public async Task Abort_WithInvalidId_ReturnBadRequestObjectResult()
+    {
+        // Arrange
+        var cancellationTokenSource = new CancellationTokenSource();
+        var playerConnections = new ConcurrentDictionary<Guid, string>();
+        var hubContext = Substitute.For<IHubContext<NotificationHub, INotificationHub>>();
+        var controller = new GameController(
+            Substitute.For<IGameRepository>(),
+            cancellationTokenSource,
+            Options.Create(new ConcurrentDictionary<Guid, GameState>()),
+            hubContext,
+            Options.Create(new ConcurrentBag<Guid>()),
+            Options.Create(playerConnections)
+        );
+        
+        // Act
+        var result = await controller.Abort(Guid.Empty);
+
+        // Assert
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+    
+    [Fact]
+    public async Task Resign_WithInvalidId_ReturnBadRequestObjectResult()
+    {
+        // Arrange
+        var cancellationTokenSource = new CancellationTokenSource();
+        var playerConnections = new ConcurrentDictionary<Guid, string>();
+        var hubContext = Substitute.For<IHubContext<NotificationHub, INotificationHub>>();
+        var controller = new GameController(
+            Substitute.For<IGameRepository>(),
+            cancellationTokenSource,
+            Options.Create(new ConcurrentDictionary<Guid, GameState>()),
+            hubContext,
+            Options.Create(new ConcurrentBag<Guid>()),
+            Options.Create(playerConnections)
+        );
+        
+        // Act
+        var result = await controller.Resign(Guid.Empty);
+
+        // Assert
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+    
+    [Fact]
+    public async Task MakeMove_WithValidPlayers_UpdateCurrantGameAndNotifyPlayers()
+    {
+        // Arrange
+        var cancellationTokenSource = new CancellationTokenSource();
+        var playerConnections = new ConcurrentDictionary<Guid, string>();
+        var hubClients = Substitute.For<IHubClients<INotificationHub>>();
+        var hubContext = Substitute.For<IHubContext<NotificationHub, INotificationHub>>();
+        var hubClient = Substitute.For<INotificationHub>();
+        var gameId = Guid.NewGuid();
+        var currentlyPlayingGames = new ConcurrentDictionary<Guid, GameState>
+        {
+            [gameId] = new()
+        };
+
+        var controller = new GameController(
+            Substitute.For<IGameRepository>(),
+            cancellationTokenSource,
+            Options.Create(currentlyPlayingGames),
+            hubContext,
+            Options.Create(new ConcurrentBag<Guid>()),
+            Options.Create(playerConnections)
+        );
+
+        var moveRequest = new MoveRequest
+        {
+            Id = gameId,
+            Move = "e2e4",
+        };
+        
+        hubContext.Clients.Returns(hubClients);
+        hubClients.Group(Arg.Any<string>()).Returns(hubClient);
+        
+        // Act
+        var result = await controller.MakeMove(moveRequest);
+
+        // Assert
+        Assert.IsType<OkResult>(result);
+        await hubClient.Received(1).OnMoveReceived(Arg.Any<string>());
     }
 }

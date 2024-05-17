@@ -31,7 +31,6 @@ namespace ChessServer.Data.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("EndTime")
-                        .IsRequired()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Fen")
@@ -39,7 +38,9 @@ namespace ChessServer.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<bool>("IsRating")
-                        .HasColumnType("boolean");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("Pgn")
                         .HasColumnType("text");

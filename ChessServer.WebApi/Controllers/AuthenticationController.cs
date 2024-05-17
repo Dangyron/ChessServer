@@ -34,8 +34,8 @@ public sealed partial class AuthenticationController : BaseController
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register([FromQuery] RegisterRequest request)
     {
-        if (await _userRepository.GetByEmailAsync(request.Email) != null ||
-            await _userRepository.GetByUsernameAsync(request.Username) != null)
+        if (await _userRepository.GetByEmailAsync(request.Email, _cancellationTokenSource.Token) != null ||
+            await _userRepository.GetByUsernameAsync(request.Username, _cancellationTokenSource.Token) != null)
             return Conflict("User already registered.");
 
         if (ValidateUsername(request.Username) == false || ValidateEmail(request.Email) == false)

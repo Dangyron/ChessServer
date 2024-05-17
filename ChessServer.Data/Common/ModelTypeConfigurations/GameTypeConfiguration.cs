@@ -19,7 +19,8 @@ public class GameTypeConfiguration : IEntityTypeConfiguration<Game>
 
         builder.Property(game => game.Fen).IsRequired();
         builder.Property(game => game.StartTime).IsRequired();
-        builder.Property(game => game.EndTime).IsRequired();
+        builder.Property(game => game.EndTime);
+        builder.Property(game => game.IsRating).HasDefaultValue(false);
 
         builder.Property(game => game.Pgn);
         
