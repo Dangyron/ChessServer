@@ -6,9 +6,7 @@ riderModule.iml
 
 global.json
 /.idea/
-*.yml
-*.env
-*.dcproj
+qodana.yml
 logs/
 .container/
 .vs/

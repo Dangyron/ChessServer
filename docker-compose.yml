@@ -1,0 +1,24 @@
+version: '3.4'
+
+services:
+  chess-server.webapi:
+    image: "chess-server.webapi:dev"
+    container_name: chess-server.webapi
+    build:
+      context: .
+      dockerfile: ChessServer.WebApi/Dockerfile
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    depends_on:
+      - chess-server.database
+
+  chess-server.database:
+    image: postgres:latest
+    container_name: chess-server.database
+    env_file:
+      - ChessServer.WebApi/psql-variables.env
+    volumes:
+      - ./.container/chess-db:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
