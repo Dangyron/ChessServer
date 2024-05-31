@@ -1,7 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using ChessServer.Domain.DtoS;
+using ChessServer.Domain.Dtos;
 using ChessServer.WebApi.Authentication.Common;
 using ChessServer.WebApi.Authentication.Interfaces;
 using Microsoft.Extensions.Options;

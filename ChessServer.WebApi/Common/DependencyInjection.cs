@@ -1,9 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text;
-using ChessLogic;
 using ChessServer.Data.Common;
 using ChessServer.Data.Data;
+using ChessServer.Domain.Models;
 using ChessServer.WebApi.Authentication;
 using ChessServer.WebApi.Authentication.Common;
 using ChessServer.WebApi.Authentication.Interfaces;
@@ -42,7 +42,7 @@ public static class DependencyInjection
 
         services.AddAuth(configuration);
 
-        var currentPlayingGames = new ConcurrentDictionary<Guid, GameState>();
+        var currentPlayingGames = new ConcurrentDictionary<Guid, PlayingGame>();
         services.AddSingleton(Options.Create(currentPlayingGames));
 
         var playersPool = new ConcurrentBag<Guid>();

@@ -1,6 +1,4 @@
-﻿using ChessLogic.Moves;
-
-namespace ChessServer.Domain.DtoS;
+﻿namespace ChessServer.Domain.Dtos;
 
 public sealed class MoveResponse
 {

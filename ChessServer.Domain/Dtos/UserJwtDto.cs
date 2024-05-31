@@ -1,4 +1,4 @@
-﻿namespace ChessServer.Domain.DtoS;
+﻿namespace ChessServer.Domain.Dtos;
 
 public sealed class UserJwtDto
 {

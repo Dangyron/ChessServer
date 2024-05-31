@@ -1,8 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Security.Claims;
-using ChessLogic;
 using ChessServer.Data.Repositories.Interfaces;
-using ChessServer.Domain.DtoS;
+using ChessServer.Domain.Dtos;
+using ChessServer.Domain.Models;
 using ChessServer.WebApi.Authentication;
 using ChessServer.WebApi.Common;
 using ChessServer.WebApi.Common.Interfaces;
@@ -38,10 +38,11 @@ public sealed class GameControllerTests
         var controller = new GameController(
             gameRepository,
             cancellationTokenSource,
-            Options.Create(new ConcurrentDictionary<Guid, GameState>()),
+            Options.Create(new ConcurrentDictionary<Guid, PlayingGame>()),
             hubContext,
             Options.Create(playersPool),
-            Options.Create(playerConnections)
+            Options.Create(playerConnections),
+            Substitute.For<IUserRepository>()
         )
         {
             ControllerContext = new ControllerContext
@@ -51,7 +52,7 @@ public sealed class GameControllerTests
         };
 
         // Act
-        var result = await controller.AddToPool();
+        var result = await controller.StartNew();
 
         // Assert
         Assert.IsType<OkResult>(result);
@@ -72,10 +73,11 @@ public sealed class GameControllerTests
         var controller = new GameController(
             Substitute.For<IGameRepository>(),
             cancellationTokenSource,
-            Options.Create(new ConcurrentDictionary<Guid, GameState>()),
+            Options.Create(new ConcurrentDictionary<Guid, PlayingGame>()),
             hubContext,
             Options.Create(new ConcurrentBag<Guid>()),
-            Options.Create(playerConnections)
+            Options.Create(playerConnections),
+            Substitute.For<IUserRepository>()
         );
 
         var whitePlayerId = Guid.NewGuid();
@@ -109,10 +111,11 @@ public sealed class GameControllerTests
         var controller = new GameController(
             Substitute.For<IGameRepository>(),
             cancellationTokenSource,
-            Options.Create(new ConcurrentDictionary<Guid, GameState>()),
+            Options.Create(new ConcurrentDictionary<Guid, PlayingGame>()),
             hubContext,
             Options.Create(new ConcurrentBag<Guid>()),
-            Options.Create(playerConnections)
+            Options.Create(playerConnections),
+            Substitute.For<IUserRepository>()
         );
         
         // Act
@@ -132,10 +135,11 @@ public sealed class GameControllerTests
         var controller = new GameController(
             Substitute.For<IGameRepository>(),
             cancellationTokenSource,
-            Options.Create(new ConcurrentDictionary<Guid, GameState>()),
+            Options.Create(new ConcurrentDictionary<Guid, PlayingGame>()),
             hubContext,
             Options.Create(new ConcurrentBag<Guid>()),
-            Options.Create(playerConnections)
+            Options.Create(playerConnections),
+            Substitute.For<IUserRepository>()
         );
         
         // Act
@@ -154,10 +158,18 @@ public sealed class GameControllerTests
         var hubClients = Substitute.For<IHubClients<INotificationHub>>();
         var hubContext = Substitute.For<IHubContext<NotificationHub, INotificationHub>>();
         var hubClient = Substitute.For<INotificationHub>();
-        var gameId = Guid.NewGuid();
-        var currentlyPlayingGames = new ConcurrentDictionary<Guid, GameState>
+        var httpContext = Substitute.For<HttpContext>();
+        var userId = Guid.NewGuid();
+        var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
         {
-            [gameId] = new()
+            new Claim(CustomClaims.UserId, userId.ToString())
+        }));
+
+        httpContext.User.Returns(claimsPrincipal);
+        var gameId = Guid.NewGuid();
+        var currentlyPlayingGames = new ConcurrentDictionary<Guid, PlayingGame>
+        {
+            [gameId] = new(new(),userId, Guid.Empty)
         };
 
         var controller = new GameController(
@@ -166,8 +178,15 @@ public sealed class GameControllerTests
             Options.Create(currentlyPlayingGames),
             hubContext,
             Options.Create(new ConcurrentBag<Guid>()),
-            Options.Create(playerConnections)
-        );
+            Options.Create(playerConnections),
+            Substitute.For<IUserRepository>()
+        )
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            },
+        };
 
         var moveRequest = new MoveRequest
         {

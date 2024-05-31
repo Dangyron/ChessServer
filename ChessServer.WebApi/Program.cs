@@ -1,5 +1,4 @@
 using ChessServer.WebApi.Common;
-using MapsterMapper;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,7 +25,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.MapGet("/yep", async context => await context.Response.WriteAsync("huy"));
 
 app.Run();

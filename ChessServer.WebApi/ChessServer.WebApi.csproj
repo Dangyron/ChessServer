@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
+        <WarningsAsErrors>true</WarningsAsErrors>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UserSecretsId>9aa3ca8c-2a19-4124-b3b9-fccf52d551d0</UserSecretsId>
@@ -10,7 +11,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Dangyron.ChessLogic" Version="1.0.3" />
+        <PackageReference Include="Dangyron.ChessLogic" Version="1.0.4" />
         <PackageReference Include="Mapster" Version="7.4.0" />
         <PackageReference Include="Mapster.Core" Version="1.2.1" />
         <PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />

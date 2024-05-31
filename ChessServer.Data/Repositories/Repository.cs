@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using ChessServer.Data.Data;
 using ChessServer.Data.Repositories.Interfaces;
 using ChessServer.Domain.Models;
@@ -23,17 +22,17 @@ public abstract class Repository<T> : IRepository<T> where T : Entity
         return Task.FromResult<IEnumerable<T>?>(Set.AsNoTracking().Where(filter ?? (f => true)));
     }
 
-    public Task<T?> GetAsync([NotNull] Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
+    public Task<T?> GetAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
     {
         return Set.AsNoTracking().FirstOrDefaultAsync(filter, cancellationToken);
     }
 
-    public Task<T?> GetByIdAsync([NotNull]Guid id, CancellationToken cancellationToken = default)
+    public Task<T?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return Set.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 
-    public async Task AddAsync([NotNull] T entity, CancellationToken cancellationToken = default)
+    public async Task AddAsync(T entity, CancellationToken cancellationToken = default)
     {
         await Set.AddAsync(entity, cancellationToken);
     }
@@ -43,7 +42,7 @@ public abstract class Repository<T> : IRepository<T> where T : Entity
         return Task.FromResult(DbContext.SaveChangesAsync(cancellationToken));
     }
 
-    public void Remove([NotNull] T entity)
+    public void Remove(T entity)
     {
         Set.Remove(entity);
     }

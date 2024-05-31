@@ -1,5 +1,5 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
-using ChessServer.Domain.DtoS;
+using ChessServer.Domain.Dtos;
 using ChessServer.WebApi.Authentication;
 using ChessServer.WebApi.Authentication.Common;
 using ChessServer.WebApi.Common.Extensions;

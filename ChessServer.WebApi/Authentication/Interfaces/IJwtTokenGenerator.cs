@@ -1,4 +1,4 @@
-﻿using ChessServer.Domain.DtoS;
+﻿using ChessServer.Domain.Dtos;
 
 namespace ChessServer.WebApi.Authentication.Interfaces;
 

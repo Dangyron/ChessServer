@@ -1,11 +1,12 @@
-﻿using System.Security.Claims;
-using System.Threading.Channels;
+﻿using System.Collections.Concurrent;
+using System.Security.Claims;
 using ChessServer.Data.Repositories.Interfaces;
 using ChessServer.Domain.Models;
 using ChessServer.WebApi.Authentication;
 using ChessServer.WebApi.Controllers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 
 namespace ChessServer.WebApi.Tests.Controllers;
@@ -28,7 +29,7 @@ public sealed class UserControllerTests
 
         httpContext.User.Returns(claimsPrincipal);
 
-        var controller = new UserController(userRepository, cancellationTokenSource, gameRepository)
+        var controller = new UserController(userRepository, cancellationTokenSource, gameRepository, Options.Create(new ConcurrentDictionary<Guid, PlayingGame>()))
         {
             ControllerContext = new ControllerContext
             {
@@ -62,7 +63,7 @@ public sealed class UserControllerTests
 
         httpContext.User.Returns(claimsPrincipal);
 
-        var controller = new UserController(userRepository, cancellationTokenSource, gameRepository)
+        var controller = new UserController(userRepository, cancellationTokenSource, gameRepository, Options.Create(new ConcurrentDictionary<Guid, PlayingGame>()))
         {
             ControllerContext = new ControllerContext
             {
@@ -95,7 +96,7 @@ public sealed class UserControllerTests
 
         httpContext.User.Returns(claimsPrincipal);
 
-        var controller = new UserController(userRepository, cancellationTokenSource, gameRepository)
+        var controller = new UserController(userRepository, cancellationTokenSource, gameRepository, Options.Create(new ConcurrentDictionary<Guid, PlayingGame>()))
         {
             ControllerContext = new ControllerContext
             {

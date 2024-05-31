@@ -26,6 +26,6 @@ public class GameRepository : Repository<Game>, IGameRepository
 
     public async Task<IEnumerable<Game>?> FindFor(Guid id, CancellationToken? cancellationToken = default)
     {
-        return await Set.Where(game => game.BlackPlayerId == id || game.WhitePlayerId == id).ToListAsync();
+        return await Set.Where(game => game.BlackPlayerId == id || game.WhitePlayerId == id).ToListAsync(cancellationToken ?? default);
     }
 }

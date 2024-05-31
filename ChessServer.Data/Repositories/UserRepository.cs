@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using ChessServer.Data.Data;
+﻿using ChessServer.Data.Data;
 using ChessServer.Data.Repositories.Interfaces;
 using ChessServer.Domain.Models;
 using Microsoft.EntityFrameworkCore;
@@ -12,12 +11,12 @@ public class UserRepository : Repository<User>, IUserRepository
     {
     }
 
-    public Task<User?> GetByEmailAsync([NotNull]string email, CancellationToken cancellationToken = default)
+    public Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
         return Set.FirstOrDefaultAsync(p => p.Email == email, cancellationToken);
     }
 
-    public Task<User?> GetByUsernameAsync([NotNull]string username, CancellationToken cancellationToken = default)
+    public Task<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default)
     {
         return Set.FirstOrDefaultAsync(p => p.Username == username, cancellationToken);
     }
@@ -25,7 +24,7 @@ public class UserRepository : Repository<User>, IUserRepository
     public async Task UpdateAsync(User entity, CancellationToken? cancellationToken = default)
     {
         var user = await Set.FirstOrDefaultAsync(p => p.Id == entity.Id, cancellationToken ?? default);
-        
+
         if (user == null)
             return;
 
@@ -38,5 +37,4 @@ public class UserRepository : Repository<User>, IUserRepository
         user.EmailConfirmed = entity.EmailConfirmed;
         user.Subscription = entity.Subscription;
     }
-
 }

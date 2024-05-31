@@ -2,7 +2,6 @@
 
 public sealed class Game : Entity
 {
-    public const string DefaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     public Guid BlackPlayerId { get; set; }
     public Guid WhitePlayerId { get; set; }
     public string Fen { get; set; } = string.Empty;
