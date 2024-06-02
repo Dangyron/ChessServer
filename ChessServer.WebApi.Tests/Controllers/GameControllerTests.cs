@@ -10,7 +10,6 @@ using ChessServer.WebApi.Controllers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Options;
 using NSubstitute;
 
 namespace ChessServer.WebApi.Tests.Controllers;
@@ -38,10 +37,10 @@ public sealed class GameControllerTests
         var controller = new GameController(
             gameRepository,
             cancellationTokenSource,
-            Options.Create(new ConcurrentDictionary<Guid, PlayingGame>()),
+            new ConcurrentDictionary<Guid, PlayingGame>(),
             hubContext,
-            Options.Create(playersPool),
-            Options.Create(playerConnections),
+            playersPool,
+            playerConnections,
             Substitute.For<IUserRepository>()
         )
         {
@@ -58,7 +57,7 @@ public sealed class GameControllerTests
         Assert.IsType<OkResult>(result);
         Assert.Contains(userId, playersPool);
     }
-    
+
     [Fact]
     public async Task StartNew_WithValidPlayers_CreatesNewGameAndReturnsOkResult()
     {
@@ -69,15 +68,16 @@ public sealed class GameControllerTests
         var hubClients = Substitute.For<IHubClients<INotificationHub>>();
         var hubContext = Substitute.For<IHubContext<NotificationHub, INotificationHub>>();
         var hubClient = Substitute.For<INotificationHub>();
+        var userRepository = Substitute.For<IUserRepository>();
         
         var controller = new GameController(
             Substitute.For<IGameRepository>(),
             cancellationTokenSource,
-            Options.Create(new ConcurrentDictionary<Guid, PlayingGame>()),
+            new ConcurrentDictionary<Guid, PlayingGame>(),
             hubContext,
-            Options.Create(new ConcurrentBag<Guid>()),
-            Options.Create(playerConnections),
-            Substitute.For<IUserRepository>()
+            new ConcurrentBag<Guid>(),
+            playerConnections,
+            userRepository
         );
 
         var whitePlayerId = Guid.NewGuid();
@@ -87,20 +87,29 @@ public sealed class GameControllerTests
         playerConnections[blackPlayerId] = string.Empty;
 
         hubContext.Groups.Returns(groupClients);
-        groupClients.AddToGroupAsync(Arg.Any<string>(), Arg.Any<string>(), cancellationTokenSource.Token).Returns(Task.CompletedTask);
-        
+        groupClients.AddToGroupAsync(Arg.Any<string>(), Arg.Any<string>(), cancellationTokenSource.Token)
+            .Returns(Task.CompletedTask);
+
         hubContext.Clients.Returns(hubClients);
         hubClients.Client(Arg.Any<string>()).Returns(hubClient);
+
+        var whitePlayer = new User { Id = whitePlayerId, Username = "WhitePlayer" };
+        var blackPlayer = new User { Id = blackPlayerId, Username = "BlackPlayer" };
         
+        userRepository.GetByIdAsync(whitePlayerId, cancellationTokenSource.Token)
+            .Returns(Task.FromResult<User?>(whitePlayer));
+        userRepository.GetByIdAsync(blackPlayerId, cancellationTokenSource.Token)
+            .Returns(Task.FromResult<User?>(blackPlayer));
         // Act
         var result = await controller.StartNew(whitePlayerId, blackPlayerId);
 
         // Assert
         Assert.IsType<OkResult>(result);
         await hubClient.Received(2).OnGameStarted(Arg.Any<string>());
-        await groupClients.Received(2).AddToGroupAsync(Arg.Any<string>(), Arg.Any<string>(), cancellationTokenSource.Token);
+        await groupClients.Received(2)
+            .AddToGroupAsync(Arg.Any<string>(), Arg.Any<string>(), cancellationTokenSource.Token);
     }
-    
+
     [Fact]
     public async Task Abort_WithInvalidId_ReturnBadRequestObjectResult()
     {
@@ -111,20 +120,20 @@ public sealed class GameControllerTests
         var controller = new GameController(
             Substitute.For<IGameRepository>(),
             cancellationTokenSource,
-            Options.Create(new ConcurrentDictionary<Guid, PlayingGame>()),
+            new ConcurrentDictionary<Guid, PlayingGame>(),
             hubContext,
-            Options.Create(new ConcurrentBag<Guid>()),
-            Options.Create(playerConnections),
+            new ConcurrentBag<Guid>(),
+            playerConnections,
             Substitute.For<IUserRepository>()
         );
-        
+
         // Act
         var result = await controller.Abort(Guid.Empty);
 
         // Assert
         Assert.IsType<BadRequestObjectResult>(result);
     }
-    
+
     [Fact]
     public async Task Resign_WithInvalidId_ReturnBadRequestObjectResult()
     {
@@ -135,20 +144,20 @@ public sealed class GameControllerTests
         var controller = new GameController(
             Substitute.For<IGameRepository>(),
             cancellationTokenSource,
-            Options.Create(new ConcurrentDictionary<Guid, PlayingGame>()),
+            new ConcurrentDictionary<Guid, PlayingGame>(),
             hubContext,
-            Options.Create(new ConcurrentBag<Guid>()),
-            Options.Create(playerConnections),
+            new ConcurrentBag<Guid>(),
+            playerConnections,
             Substitute.For<IUserRepository>()
         );
-        
+
         // Act
         var result = await controller.Resign(Guid.Empty);
 
         // Assert
         Assert.IsType<BadRequestObjectResult>(result);
     }
-    
+
     [Fact]
     public async Task MakeMove_WithValidPlayers_UpdateCurrantGameAndNotifyPlayers()
     {
@@ -169,16 +178,16 @@ public sealed class GameControllerTests
         var gameId = Guid.NewGuid();
         var currentlyPlayingGames = new ConcurrentDictionary<Guid, PlayingGame>
         {
-            [gameId] = new(new(),userId, Guid.Empty)
+            [gameId] = new(new(), userId, Guid.Empty)
         };
 
         var controller = new GameController(
             Substitute.For<IGameRepository>(),
             cancellationTokenSource,
-            Options.Create(currentlyPlayingGames),
+            currentlyPlayingGames,
             hubContext,
-            Options.Create(new ConcurrentBag<Guid>()),
-            Options.Create(playerConnections),
+            new ConcurrentBag<Guid>(),
+            playerConnections,
             Substitute.For<IUserRepository>()
         )
         {
@@ -193,10 +202,10 @@ public sealed class GameControllerTests
             Id = gameId,
             Move = "e2e4",
         };
-        
+
         hubContext.Clients.Returns(hubClients);
         hubClients.Group(Arg.Any<string>()).Returns(hubClient);
-        
+
         // Act
         var result = await controller.MakeMove(moveRequest);
 

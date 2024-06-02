@@ -7,4 +7,5 @@ public interface INotificationHub
     Task OnMoveReceived(string message);
     Task OnGameStarted(string message);
     Task OnGameEnded(string message);
+    Task OnPlayerResigned(string message);
 }

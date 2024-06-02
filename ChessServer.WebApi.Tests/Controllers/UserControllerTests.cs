@@ -29,7 +29,7 @@ public sealed class UserControllerTests
 
         httpContext.User.Returns(claimsPrincipal);
 
-        var controller = new UserController(userRepository, cancellationTokenSource, gameRepository, Options.Create(new ConcurrentDictionary<Guid, PlayingGame>()))
+        var controller = new UserController(userRepository, cancellationTokenSource, gameRepository, new ConcurrentDictionary<Guid, PlayingGame>())
         {
             ControllerContext = new ControllerContext
             {
@@ -63,7 +63,7 @@ public sealed class UserControllerTests
 
         httpContext.User.Returns(claimsPrincipal);
 
-        var controller = new UserController(userRepository, cancellationTokenSource, gameRepository, Options.Create(new ConcurrentDictionary<Guid, PlayingGame>()))
+        var controller = new UserController(userRepository, cancellationTokenSource, gameRepository, new ConcurrentDictionary<Guid, PlayingGame>())
         {
             ControllerContext = new ControllerContext
             {
@@ -96,7 +96,7 @@ public sealed class UserControllerTests
 
         httpContext.User.Returns(claimsPrincipal);
 
-        var controller = new UserController(userRepository, cancellationTokenSource, gameRepository, Options.Create(new ConcurrentDictionary<Guid, PlayingGame>()))
+        var controller = new UserController(userRepository, cancellationTokenSource, gameRepository, new ConcurrentDictionary<Guid, PlayingGame>())
         {
             ControllerContext = new ControllerContext
             {

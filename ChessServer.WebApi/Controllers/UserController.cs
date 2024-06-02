@@ -18,12 +18,12 @@ public class UserController : BaseController
     private readonly ConcurrentDictionary<Guid, PlayingGame> _currentPlayingGames;
 
     public UserController(IUserRepository userRepository, CancellationTokenSource cancellationTokenSource,
-        IGameRepository gameRepository, IOptions<ConcurrentDictionary<Guid, PlayingGame>> currentPlayingGames)
+        IGameRepository gameRepository, ConcurrentDictionary<Guid, PlayingGame> currentPlayingGames)
     {
         _userRepository = userRepository;
         _cancellationTokenSource = cancellationTokenSource;
         _gameRepository = gameRepository;
-        _currentPlayingGames = currentPlayingGames.Value;
+        _currentPlayingGames = currentPlayingGames;
     }
 
     [HttpGet("games")]
