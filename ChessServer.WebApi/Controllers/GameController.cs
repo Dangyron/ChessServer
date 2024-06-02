@@ -58,7 +58,7 @@ public class GameController : ControllerBase
             return Ok();
         }
 
-        _playersPool.TryPeek(out var opponent);
+        _playersPool.TryTake(out var opponent);
 
         return await StartNew(userId, opponent);
     }
