@@ -12,7 +12,6 @@ public sealed class PlayingGame
         WhitePlayer = whitePlayer;
         BlackPlayer = blackPlayer;
     }
-    
     public GameState? Game { get; }
     public Guid WhitePlayer { get; }
     public Guid BlackPlayer { get; }

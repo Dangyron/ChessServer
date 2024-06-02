@@ -23,13 +23,13 @@ public class GameController : ControllerBase
     private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
     private readonly ConcurrentDictionary<Guid, PlayingGame> _currentPlayingGames;
     private readonly ConcurrentDictionary<Guid, string> _playerConnections;
-    private readonly ConcurrentBag<Guid> _playersPool;
+    private readonly ConcurrentDictionary<Guid, bool> _playersPool;
 
     public GameController(IGameRepository gameRepository,
         CancellationTokenSource cancellationTokenSource,
         ConcurrentDictionary<Guid, PlayingGame> currentPlayingGames,
         IHubContext<NotificationHub, INotificationHub> hubContext,
-        ConcurrentBag<Guid> playersPool,
+        ConcurrentDictionary<Guid, bool> playersPool,
         ConcurrentDictionary<Guid, string> playerConnections, IUserRepository userRepository)
     {
         _gameRepository = gameRepository;
@@ -48,18 +48,20 @@ public class GameController : ControllerBase
     {
         var userId = User.GetId();
 
-        if (_playersPool.Contains(userId))
+        if (_playersPool.ContainsKey(userId))
             return Conflict();
 
         if (_playersPool.IsEmpty)
         {
-            _playersPool.Add(userId);
+            _playersPool.GetOrAdd(userId, false);
             return Ok();
         }
 
-        _playersPool.TryTake(out var opponent);
+        var key = _playersPool.Keys.Last();
+        
+        _playersPool.TryRemove(key, out _);
 
-        return await StartNew(userId, opponent);
+        return await StartNew(userId, key);
     }
     
     [HttpPost("reconnect")]
@@ -69,15 +71,26 @@ public class GameController : ControllerBase
     {
         var userId = User.GetId();
 
-        var game = _currentPlayingGames.FirstOrDefault(game =>
-            game.Value.WhitePlayer == userId || game.Value.BlackPlayer == userId).Value;
-
-        if (game is null)
-            return BadRequest();
+        var game = _currentPlayingGames.FirstOrDefault(playingGame => playingGame.Value.WhitePlayer == userId || playingGame.Value.BlackPlayer == userId);
+        var value = game.Value;
         
-        _playersPool.TryTake(out var opponent);
+        if (value.Game == null)
+            return BadRequest();
 
-        return await StartNew(userId, opponent);
+        var color = value.WhitePlayer == userId ? PlayerColor.White : PlayerColor.Black;
+        var opponentId = color.GetOpponent() == PlayerColor.White ? value.WhitePlayer : value.BlackPlayer;
+        
+        var opponent = await _userRepository.GetByIdAsync(opponentId, _cancellationTokenSource.Token);
+        
+        var continueGame = new CurrentPlayingGameDto
+        {
+            Id = game.Key,
+            Fen = value.Game.ToString(),
+            Color = color,
+            OpponentUsername = opponent!.Username,
+        };
+
+        return Ok(continueGame);
     }
 
     public async Task<IActionResult> StartNew(Guid whitePlayerId, Guid blackPlayerId, bool isRating = false)
