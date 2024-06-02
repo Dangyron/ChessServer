@@ -9,10 +9,12 @@ namespace ChessServer.WebApi.Common;
 public sealed class NotificationHub : Hub<INotificationHub>
 {
     private readonly ConcurrentDictionary<Guid, string> _playerConnections;
+    private readonly ConcurrentDictionary<Guid, bool> _playersPool;
 
-    public NotificationHub(ConcurrentDictionary<Guid, string> playerConnections)
+    public NotificationHub(ConcurrentDictionary<Guid, string> playerConnections, ConcurrentDictionary<Guid, bool> playersPool)
     {
         _playerConnections = playerConnections;
+        _playersPool = playersPool;
     }
 
     public override async Task OnConnectedAsync()
@@ -21,8 +23,8 @@ public sealed class NotificationHub : Hub<INotificationHub>
         var claims = new JwtSecurityTokenHandler().ReadToken(token) as JwtSecurityToken;
 
         var playerId = claims!.GetId();
-
         _playerConnections[playerId] = Context.ConnectionId;
+        
         await Clients.Caller.OnConnected("You are connected successfully");
         await base.OnConnectedAsync();
     }
@@ -30,9 +32,11 @@ public sealed class NotificationHub : Hub<INotificationHub>
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var key = _playerConnections.First(pair => pair.Value == Context.ConnectionId).Key;
+        
         _playerConnections.TryRemove(key, out _);
+        _playersPool.TryRemove(key, out _);
+        
         await Clients.Caller.OnDisconnected("You are disconnected successfully");
-
         await base.OnDisconnectedAsync(exception);
     }
 }

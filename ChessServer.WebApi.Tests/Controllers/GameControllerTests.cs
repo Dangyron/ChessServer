@@ -22,7 +22,7 @@ public sealed class GameControllerTests
         // Arrange
         var gameRepository = Substitute.For<IGameRepository>();
         var cancellationTokenSource = new CancellationTokenSource();
-        var playersPool = new ConcurrentBag<Guid>();
+        var playersPool = new ConcurrentDictionary<Guid, bool>();
         var playerConnections = new ConcurrentDictionary<Guid, string>();
         var hubContext = Substitute.For<IHubContext<NotificationHub, INotificationHub>>();
         var httpContext = Substitute.For<HttpContext>();
@@ -55,7 +55,7 @@ public sealed class GameControllerTests
 
         // Assert
         Assert.IsType<OkResult>(result);
-        Assert.Contains(userId, playersPool);
+        Assert.Contains(userId, playersPool.Keys);
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public sealed class GameControllerTests
             cancellationTokenSource,
             new ConcurrentDictionary<Guid, PlayingGame>(),
             hubContext,
-            new ConcurrentBag<Guid>(),
+            new ConcurrentDictionary<Guid, bool>(),
             playerConnections,
             userRepository
         );
@@ -122,7 +122,7 @@ public sealed class GameControllerTests
             cancellationTokenSource,
             new ConcurrentDictionary<Guid, PlayingGame>(),
             hubContext,
-            new ConcurrentBag<Guid>(),
+            new ConcurrentDictionary<Guid, bool>(),
             playerConnections,
             Substitute.For<IUserRepository>()
         );
@@ -146,7 +146,7 @@ public sealed class GameControllerTests
             cancellationTokenSource,
             new ConcurrentDictionary<Guid, PlayingGame>(),
             hubContext,
-            new ConcurrentBag<Guid>(),
+            new ConcurrentDictionary<Guid, bool>(),
             playerConnections,
             Substitute.For<IUserRepository>()
         );
@@ -186,7 +186,7 @@ public sealed class GameControllerTests
             cancellationTokenSource,
             currentlyPlayingGames,
             hubContext,
-            new ConcurrentBag<Guid>(),
+            new ConcurrentDictionary<Guid, bool>(),
             playerConnections,
             Substitute.For<IUserRepository>()
         )
