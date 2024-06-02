@@ -9,7 +9,7 @@ services:
       dockerfile: ChessServer.WebApi/Dockerfile
     ports:
       - "8080:8080"
-      - "10002:10002"
+      - "8081:8081"
     depends_on:
       - chess-server.database
 
