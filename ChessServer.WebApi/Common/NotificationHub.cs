@@ -3,7 +3,6 @@ using System.IdentityModel.Tokens.Jwt;
 using ChessServer.WebApi.Common.Extensions;
 using ChessServer.WebApi.Common.Interfaces;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Options;
 
 namespace ChessServer.WebApi.Common;
 
@@ -11,9 +10,9 @@ public sealed class NotificationHub : Hub<INotificationHub>
 {
     private readonly ConcurrentDictionary<Guid, string> _playerConnections;
 
-    public NotificationHub(IOptions<ConcurrentDictionary<Guid, string>> playerConnections)
+    public NotificationHub(ConcurrentDictionary<Guid, string> playerConnections)
     {
-        _playerConnections = playerConnections.Value;
+        _playerConnections = playerConnections;
     }
 
     public override async Task OnConnectedAsync()

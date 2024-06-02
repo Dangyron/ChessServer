@@ -10,7 +10,6 @@ using ChessServer.WebApi.Common.Extensions;
 using ChessServer.WebApi.Common.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace ChessServer.WebApi.Controllers;
@@ -28,18 +27,18 @@ public class GameController : ControllerBase
 
     public GameController(IGameRepository gameRepository,
         CancellationTokenSource cancellationTokenSource,
-        IOptions<ConcurrentDictionary<Guid, PlayingGame>> currentPlayingGames,
+        ConcurrentDictionary<Guid, PlayingGame> currentPlayingGames,
         IHubContext<NotificationHub, INotificationHub> hubContext,
-        IOptions<ConcurrentBag<Guid>> playersPool,
-        IOptions<ConcurrentDictionary<Guid, string>> playerConnections, IUserRepository userRepository)
+        ConcurrentBag<Guid> playersPool,
+        ConcurrentDictionary<Guid, string> playerConnections, IUserRepository userRepository)
     {
         _gameRepository = gameRepository;
         _cancellationTokenSource = cancellationTokenSource;
-        _currentPlayingGames = currentPlayingGames.Value;
+        _currentPlayingGames = currentPlayingGames;
         _hubContext = hubContext;
         _userRepository = userRepository;
-        _playerConnections = playerConnections.Value;
-        _playersPool = playersPool.Value;
+        _playerConnections = playerConnections;
+        _playersPool = playersPool;
     }
 
     [HttpPost("start-new")]
@@ -58,7 +57,7 @@ public class GameController : ControllerBase
             return Ok();
         }
 
-        _playersPool.TryPeek(out var opponent);
+        _playersPool.TryTake(out var opponent);
 
         return await StartNew(userId, opponent);
     }
@@ -76,16 +75,15 @@ public class GameController : ControllerBase
         if (game is null)
             return BadRequest();
         
-
-        _playersPool.TryPeek(out var opponent);
+        _playersPool.TryTake(out var opponent);
 
         return await StartNew(userId, opponent);
     }
 
     public async Task<IActionResult> StartNew(Guid whitePlayerId, Guid blackPlayerId, bool isRating = false)
     {
-        var whitePlayer = await _userRepository.GetByIdAsync(whitePlayerId);
-        var blackPlayer = await _userRepository.GetByIdAsync(blackPlayerId);
+        var whitePlayer = await _userRepository.GetByIdAsync(whitePlayerId, _cancellationTokenSource.Token);
+        var blackPlayer = await _userRepository.GetByIdAsync(blackPlayerId, _cancellationTokenSource.Token);
         
         var game = new Game
         {
@@ -220,6 +218,8 @@ public class GameController : ControllerBase
     private async Task EndGame(Guid gameId, GameResult result)
     {
         var game = (await _gameRepository.GetByIdAsync(gameId))!;
+        var gameState = _currentPlayingGames.GetValueOrDefault(gameId, PlayingGame.None);
+
         game.Result = result;
 
         var gameEnded = new GameEndedDto
@@ -230,7 +230,10 @@ public class GameController : ControllerBase
 
         _currentPlayingGames.TryRemove(gameId, out _);
         
-        await _hubContext.Clients.Group(game.Id.ToString()).OnGameEnded(JsonConvert.SerializeObject(gameEnded));
+        if (gameState.Game!.Result != null)
+            await _hubContext.Clients.Group(game.Id.ToString()).OnGameEnded(JsonConvert.SerializeObject(gameEnded));
+        else
+            await _hubContext.Clients.Group(game.Id.ToString()).OnPlayerResigned(JsonConvert.SerializeObject(gameEnded));
 
         await _gameRepository.UpdateAsync(game, _cancellationTokenSource.Token);
         await _gameRepository.SaveChangesAsync(_cancellationTokenSource.Token);

@@ -20,13 +20,9 @@ public static class DependencyInjection
 {
     public static void ApplyMigrations(this IApplicationBuilder app)
     {
-        using (var scope = app.ApplicationServices.CreateScope())
-        {
-            using (var dbContext = scope.ServiceProvider.GetRequiredService<ChessDbContext>())
-            {
-                dbContext.Database.Migrate();
-            }
-        }
+        using var scope = app.ApplicationServices.CreateScope();
+        using var dbContext = scope.ServiceProvider.GetRequiredService<ChessDbContext>();
+        dbContext.Database.Migrate();
     }
 
     public static IServiceCollection AddBaseSetUp(this IServiceCollection services, ConfigurationManager configuration)
@@ -34,22 +30,14 @@ public static class DependencyInjection
         services.AddControllers()
             .AddNewtonsoftJson();
 
-        services.AddSignalR();
+        services.AddMapping()
+            .AddDb(configuration)
+            .AddAuth(configuration)
+            .AddSignalR();
 
-        services.AddMapping();
-
-        services.AddDb(configuration);
-
-        services.AddAuth(configuration);
-
-        var currentPlayingGames = new ConcurrentDictionary<Guid, PlayingGame>();
-        services.AddSingleton(Options.Create(currentPlayingGames));
-
-        var playersPool = new ConcurrentBag<Guid>();
-        services.AddSingleton(Options.Create(playersPool));
-
-        var playersConnections = new ConcurrentDictionary<Guid, string>();
-        services.AddSingleton(Options.Create(playersConnections));
+        services.AddSingleton<ConcurrentDictionary<Guid, PlayingGame>>();
+        services.AddSingleton<ConcurrentBag<Guid>>();
+        services.AddSingleton<ConcurrentDictionary<Guid, string>>();
 
         return services;
     }
