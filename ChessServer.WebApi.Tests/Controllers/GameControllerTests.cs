@@ -4,18 +4,40 @@ using ChessServer.Data.Repositories.Interfaces;
 using ChessServer.Domain.Dtos;
 using ChessServer.Domain.Models;
 using ChessServer.WebApi.Authentication;
+using ChessServer.WebApi.Authentication.Interfaces;
 using ChessServer.WebApi.Common;
 using ChessServer.WebApi.Common.Interfaces;
+using ChessServer.WebApi.Common.Mapping;
 using ChessServer.WebApi.Controllers;
+using Mapster;
+using MapsterMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 
 namespace ChessServer.WebApi.Tests.Controllers;
 
 public sealed class GameControllerTests
 {
+    private readonly IMapper _mapper;
+
+    public GameControllerTests()
+    {
+        var services = new ServiceCollection();
+
+        var mapperConfig = TypeAdapterConfig.GlobalSettings;
+        mapperConfig.Apply(new AuthenticationResponseMappingConfig());
+
+        services.AddSingleton(mapperConfig);
+
+        services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddSingleton<IMapper, ServiceMapper>();
+        var serviceProvider = services.BuildServiceProvider();
+        _mapper = serviceProvider.GetRequiredService<IMapper>();
+    }
+    
     [Fact]
     public async Task AddToPool_WhenPlayerNotInPool_AddsPlayerToPool()
     {
@@ -41,7 +63,8 @@ public sealed class GameControllerTests
             hubContext,
             playersPool,
             playerConnections,
-            Substitute.For<IUserRepository>()
+            Substitute.For<IUserRepository>(),
+            _mapper
         )
         {
             ControllerContext = new ControllerContext
@@ -77,7 +100,8 @@ public sealed class GameControllerTests
             hubContext,
             new ConcurrentDictionary<Guid, bool>(),
             playerConnections,
-            userRepository
+            userRepository,
+            _mapper
         );
 
         var whitePlayerId = Guid.NewGuid();
@@ -124,7 +148,8 @@ public sealed class GameControllerTests
             hubContext,
             new ConcurrentDictionary<Guid, bool>(),
             playerConnections,
-            Substitute.For<IUserRepository>()
+            Substitute.For<IUserRepository>(),
+            _mapper
         );
 
         // Act
@@ -148,7 +173,8 @@ public sealed class GameControllerTests
             hubContext,
             new ConcurrentDictionary<Guid, bool>(),
             playerConnections,
-            Substitute.For<IUserRepository>()
+            Substitute.For<IUserRepository>(),
+            _mapper
         );
 
         // Act
@@ -173,6 +199,7 @@ public sealed class GameControllerTests
         {
             new Claim(CustomClaims.UserId, userId.ToString())
         }));
+        
 
         httpContext.User.Returns(claimsPrincipal);
         var gameId = Guid.NewGuid();
@@ -188,7 +215,8 @@ public sealed class GameControllerTests
             hubContext,
             new ConcurrentDictionary<Guid, bool>(),
             playerConnections,
-            Substitute.For<IUserRepository>()
+            Substitute.For<IUserRepository>(),
+            _mapper
         )
         {
             ControllerContext = new ControllerContext

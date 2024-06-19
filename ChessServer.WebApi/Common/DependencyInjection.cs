@@ -36,10 +36,10 @@ public static class DependencyInjection
             .AddSignalR();
 
         services.AddSingleton<ConcurrentDictionary<Guid, PlayingGame>>();
-        services.AddSingleton<ConcurrentBag<Guid>>();
+        services.AddSingleton<ConcurrentDictionary<Guid, bool>>();
         services.AddSingleton<ConcurrentDictionary<Guid, string>>();
 
-        return services;
+        return services;    
     }
 
     private static IServiceCollection AddMapping(this IServiceCollection services)
@@ -57,7 +57,7 @@ public static class DependencyInjection
     {
         var jwtTokenSettings = new JwtTokenSettings();
         configuration.Bind(JwtTokenSettings.SectionName, jwtTokenSettings);
-
+        
         services.AddSingleton(Options.Create(jwtTokenSettings));
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<CancellationTokenSource>();

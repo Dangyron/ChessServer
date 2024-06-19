@@ -5,16 +5,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddBaseSetUp(builder.Configuration);
 builder.Host.UseSerilog((context, configuration) =>
-{
-    configuration.ReadFrom.Configuration(context.Configuration);
-});
+    configuration.ReadFrom.Configuration(context.Configuration));
 
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
     app.ApplyMigrations();
-}   
+}
 
 app.UseHttpsRedirection();
 app.MapHub<NotificationHub>("notification");

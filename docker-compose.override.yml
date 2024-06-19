@@ -4,9 +4,8 @@ services:
   chess-server.webapi:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:8081;http://+:8080
+      - ASPNETCORE_URLS=https://+:8081
     ports:
-      - "8080"
       - "8081"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro

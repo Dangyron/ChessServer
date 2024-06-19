@@ -83,7 +83,7 @@ public sealed partial class AuthenticationController : BaseController
     {
         if (string.IsNullOrWhiteSpace(username) || !char.IsLetter(username.First()))
             return false;
-
+        
         return username.Length >= 5;
     }
 

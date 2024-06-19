@@ -8,6 +8,7 @@ using ChessServer.Domain.Models;
 using ChessServer.WebApi.Common;
 using ChessServer.WebApi.Common.Extensions;
 using ChessServer.WebApi.Common.Interfaces;
+using MapsterMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
@@ -24,19 +25,23 @@ public class GameController : ControllerBase
     private readonly ConcurrentDictionary<Guid, PlayingGame> _currentPlayingGames;
     private readonly ConcurrentDictionary<Guid, string> _playerConnections;
     private readonly ConcurrentDictionary<Guid, bool> _playersPool;
+    private readonly IMapper _mapper;
 
     public GameController(IGameRepository gameRepository,
         CancellationTokenSource cancellationTokenSource,
         ConcurrentDictionary<Guid, PlayingGame> currentPlayingGames,
         IHubContext<NotificationHub, INotificationHub> hubContext,
         ConcurrentDictionary<Guid, bool> playersPool,
-        ConcurrentDictionary<Guid, string> playerConnections, IUserRepository userRepository)
+        ConcurrentDictionary<Guid, string> playerConnections, 
+        IUserRepository userRepository, 
+        IMapper mapper)
     {
         _gameRepository = gameRepository;
         _cancellationTokenSource = cancellationTokenSource;
         _currentPlayingGames = currentPlayingGames;
         _hubContext = hubContext;
         _userRepository = userRepository;
+        _mapper = mapper;
         _playerConnections = playerConnections;
         _playersPool = playersPool;
     }
@@ -111,8 +116,11 @@ public class GameController : ControllerBase
 
         _currentPlayingGames.TryAdd(game.Id, new(new GameState(), whitePlayerId, blackPlayerId));
 
+        var dto = new GameStartedDto
+            { GameId = game.Id, PlayerColor = PlayerColor.White, OpponentUsername = blackPlayer!.Username };
+        
         await _hubContext.Clients.Client(_playerConnections[whitePlayerId]).OnGameStarted(
-            JsonConvert.SerializeObject(new GameStartedDto { GameId = game.Id, PlayerColor = PlayerColor.White, OpponentUsername = blackPlayer!.Username})
+            JsonConvert.SerializeObject(dto)
         );
 
         await _hubContext.Clients.Client(_playerConnections[blackPlayerId]).OnGameStarted(
@@ -156,9 +164,8 @@ public class GameController : ControllerBase
             return BadRequest("Game not found");
 
         var userId = User.GetId();
-        var game = (await _gameRepository.GetByIdAsync(gameId))!;
 
-        var result = game.WhitePlayerId == userId ? GameResult.WhiteWin : GameResult.BlackWin;
+        var result = gameState.WhitePlayer == userId ? GameResult.BlackWin : GameResult.WhiteWin;
 
         await EndGame(gameId, result);
 
@@ -188,11 +195,7 @@ public class GameController : ControllerBase
         if (!currentGame.Game.MakeMove(move))
             return BadRequest();
 
-        var moveResponse = new MoveResponse
-        {
-            Id = request.Id, 
-            Move = currentGame.Game.ConvertMoveToString(move)
-        };
+        var moveResponse = _mapper.Map<MoveResponse>(request);
         
         await _hubContext.Clients.Group(request.Id.ToString())
             .OnMoveReceived(JsonConvert.SerializeObject(moveResponse));
@@ -253,9 +256,5 @@ public class GameController : ControllerBase
 
         await _hubContext.Groups.RemoveFromGroupAsync(_playerConnections[game.WhitePlayerId], game.Id.ToString());
         await _hubContext.Groups.RemoveFromGroupAsync(_playerConnections[game.BlackPlayerId], game.Id.ToString());
-
-        _currentPlayingGames.TryRemove(game.Id, out _);
-        _playerConnections.TryRemove(game.WhitePlayerId, out _);
-        _playerConnections.TryRemove(game.BlackPlayerId, out _);
     }
 }

@@ -6,7 +6,6 @@ using ChessServer.WebApi.Authentication;
 using ChessServer.WebApi.Controllers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using NSubstitute;
 
 namespace ChessServer.WebApi.Tests.Controllers;
@@ -93,7 +92,7 @@ public sealed class UserControllerTests
         {
             new Claim(CustomClaims.UserId, userId.ToString())
         }));
-
+        var emptyList = new EnumerableQuery<Game>(Enumerable.Empty<Game>());
         httpContext.User.Returns(claimsPrincipal);
 
         var controller = new UserController(userRepository, cancellationTokenSource, gameRepository, new ConcurrentDictionary<Guid, PlayingGame>())
@@ -104,13 +103,13 @@ public sealed class UserControllerTests
             },
         };
 
-        gameRepository.FindFor(Arg.Any<Guid>(), cancellationTokenSource.Token).Returns(new List<Game>());
+        gameRepository.FindForAsync(Arg.Any<Guid>(), cancellationTokenSource.Token).Returns(emptyList);
         // Act
         var result = await controller.GetGames();
         
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var games = Assert.IsType<List<Game>>(okResult.Value);
-        Assert.Equal(new List<Game>(), games);
+        var games = Assert.IsAssignableFrom<IQueryable<Game>>(okResult.Value);
+        Assert.Equal(emptyList, games);
     }
 }

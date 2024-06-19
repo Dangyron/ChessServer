@@ -2,7 +2,7 @@
 
 public sealed class JwtTokenSettings
 {
-    public const string SectionName = "JwtTokenSettings";
+    public const string SectionName = nameof(JwtTokenSettings);
     public string SecretKey { get; set; } = null!;
     public string Issuer { get; set; } = null!;
     public string Audience { get; set; } = null!;
